@@ -119,19 +119,22 @@ class DB:
     def close(self):
         self.conn.close()
 
-    def creator(self, profile: str) -> int:
+    def creator(self, profile: str, platform: str = 'douyin') -> int:
         with self.conn:
-            self.conn.execute("INSERT OR IGNORE INTO creators(profile_url,created_at) VALUES (?,?)", (profile,now()))
+            self.conn.execute("INSERT OR IGNORE INTO creators(platform,profile_url,created_at) VALUES (?,?,?)",
+                              (platform, profile, now()))
         return int(self.conn.execute("SELECT id FROM creators WHERE profile_url=?", (profile,)).fetchone()[0])
 
-    def put_video(self, creator_id: int, candidate: VideoCandidate) -> int:
+    def put_video(self, creator_id: int, candidate: VideoCandidate, platform: str = 'douyin') -> int:
         with self.conn:
             self.conn.execute("""INSERT INTO videos(creator_id,platform,platform_video_id,source_url,title,published_at,discovered_at)
                 VALUES(?,?,?,?,?,?,?) ON CONFLICT(platform,platform_video_id) DO UPDATE SET
                 title=CASE WHEN excluded.title <> '' THEN excluded.title ELSE videos.title END,
                 published_at=COALESCE(videos.published_at,excluded.published_at)
-                """, (creator_id,'douyin',candidate.video_id,candidate.url,candidate.title,candidate.published_at,now()))
-        return int(self.conn.execute("SELECT id FROM videos WHERE platform=? AND platform_video_id=?", ('douyin',candidate.video_id)).fetchone()[0])
+                """, (creator_id, platform, candidate.video_id, candidate.url, candidate.title,
+                      candidate.published_at, now()))
+        return int(self.conn.execute("SELECT id FROM videos WHERE platform=? AND platform_video_id=?",
+                                     (platform, candidate.video_id)).fetchone()[0])
 
     def get_video(self, video_id: int):
         return self.conn.execute("SELECT * FROM videos WHERE id=?",(video_id,)).fetchone()
@@ -235,3 +238,22 @@ class DB:
 
     def stats(self):
         return {r['status']:r['n'] for r in self.conn.execute("SELECT status, COUNT(*) AS n FROM videos GROUP BY status")}
+
+    def stats_by_platform(self):
+        return [dict(r) for r in self.conn.execute(
+            'SELECT platform, status, COUNT(*) AS n FROM videos GROUP BY platform, status ORDER BY platform, status')]
+
+    def integrity_check(self) -> str:
+        return str(self.conn.execute('PRAGMA integrity_check').fetchone()[0])
+
+    def foreign_key_check(self) -> list[dict]:
+        return [dict(r) for r in self.conn.execute('PRAGMA foreign_key_check')]
+
+    def backup_to(self, path: str | Path) -> None:
+        """Consistent online backup via the SQLite backup API."""
+        target = sqlite3.connect(str(path))
+        try:
+            with target:
+                self.conn.backup(target)
+        finally:
+            target.close()
