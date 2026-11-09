@@ -13,8 +13,9 @@ def transcribe_audio(path: str | Path, *, device='cpu', compute_type='int8', mod
     model=WhisperModel(model_name,device=device,compute_type=compute_type)
     segments,meta=model.transcribe(str(path),language='zh',beam_size=5,vad_filter=True,
                                     word_timestamps=False,condition_on_previous_text=False)
-    records=[Segment(i,int(s.start*1000),int(s.end*1000),s.text.strip())
-             for i,s in enumerate(segments) if s.text.strip()]
+    valid = [s for s in segments if s.text.strip()]
+    records = [Segment(i, int(s.start * 1000), int(s.end * 1000), s.text.strip())
+               for i, s in enumerate(valid)]
     if not records:
         raise RuntimeError('Whisper returned no speech segments')
     return records,meta.language,getattr(faster_whisper,'__version__','unknown')

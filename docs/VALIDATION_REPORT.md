@@ -3,7 +3,7 @@
 Performed in this ChatGPT isolated Python container, **not** on the user's authenticated Chrome or computer.
 
 - Python source compilation: pass (`python -m compileall -q src`).
-- Offline pytest suite: **24 passed**. Covers SQLite CRUD/dedup/crash-state recovery, direct quote evidence validator, local URL restrictions, WAV QC, browser-harness CLI mocked interaction, 2-video sequential idempotence and fake ASR+LLM data persistence.
+- Offline pytest suite: **25 passed**. Covers SQLite CRUD/dedup/crash-state recovery, direct quote evidence validator, local URL restrictions, WAV QC, browser-harness CLI mocked interaction, 2-video sequential idempotence and fake ASR+LLM data persistence.
 - Editable package install: pass (`pip install --no-build-isolation -e .`).
 - CLI init/stats/doctor: pass. `doctor` reports installed executables, not functional browser/audio configuration.
 - FFmpeg generated a 3s synthetic test tone with 16kHz mono PCM16 and wav_quality marked QC pass. This checks WAV parsing only; it does **not** verify system-loopback recording, playback of real videos, or copyrighted content.

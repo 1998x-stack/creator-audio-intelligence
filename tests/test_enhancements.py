@@ -91,3 +91,25 @@ def test_single_writer_lock(tmp_path):
                 pass
     with RunLock(path):
         pass
+
+
+def test_asr_nonempty_segments_have_contiguous_ids(monkeypatch):
+    import sys
+    from types import ModuleType, SimpleNamespace
+    import creator_audio_intel.asr as asr
+    fake = ModuleType('faster_whisper')
+    fake.__version__ = 'fake1'
+    class FakeWhisper:
+        def __init__(self, *args, **kwargs): pass
+        def transcribe(self, path, **kwargs):
+            segments = [SimpleNamespace(start=0,end=1,text='经济'),
+                        SimpleNamespace(start=1,end=2,text='   '),
+                        SimpleNamespace(start=2,end=3,text='增长')]
+            return iter(segments), SimpleNamespace(language='zh')
+    fake.WhisperModel = FakeWhisper
+    monkeypatch.setitem(sys.modules, 'faster_whisper', fake)
+    segments, lang, version = asr.transcribe_audio('fake.wav')
+    assert [s.segment_id for s in segments] == [0, 1]
+    assert [s.text for s in segments] == ['经济','增长']
+    assert lang == 'zh'
+    assert version == 'fake1'
