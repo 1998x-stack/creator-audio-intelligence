@@ -28,6 +28,9 @@ class CaptureResult:
     rms: float
     qc_ok: bool
     qc_reason: str
+    peak: int = 0
+    silence_ratio: float = 0.0
+    clipped_fraction: float = 0.0
 
 
 ClaimKind = Literal["fact", "causal", "opinion", "recommendation", "forecast"]
