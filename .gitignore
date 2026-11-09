@@ -1,0 +1,18 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+.ruff_cache/
+.env
+.env.*
+!.env.example
+# Do not publish actual media or private transcripts from public creator works
+data/**
+!data/**/
+!data/**/.gitkeep
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+*.log
+*.partial.wav
