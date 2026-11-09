@@ -49,7 +49,7 @@ python -m pytest -q
 | `scripts/e2e_test.sh --tier offline` | **7 pass / 0 fail / 0 skip** |
 | `scripts/e2e_test.sh --tier live-browser` | **10 pass / 0 fail / 0 skip** |
 | `scripts/e2e_test.sh --tier hardware` | **SKIPPED** — no loopback capture device (GOTCHA-AUDIO-05) |
-| `scripts/e2e_test.sh --tier live-douyin` | **SKIPPED** — douyin unreachable (GOTCHA-ENV-01) |
+| `scripts/e2e_test.sh --tier live-douyin` | **SKIPPED** — douyin unreachable (GOTCHA-ENV-01); exit 3 |
 | `scripts/e2e_test.sh --tier full-e2e` | **SKIPPED** — needs both of the above |
 
 Test suite composition (53):

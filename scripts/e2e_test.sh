@@ -287,6 +287,11 @@ case "$TIER" in
   live-douyin)  run_tier offline tier_offline && run_tier live-douyin tier_live_douyin ;;
   full-e2e)     run_tier offline tier_offline && run_tier hardware tier_hardware \
                   && run_tier live-browser tier_live_browser && run_tier full-e2e tier_full_e2e ;;
+  *)
+    echo "unknown tier: $TIER" >&2
+    echo "valid tiers: offline mock hardware live-browser live-douyin full-e2e" >&2
+    exit 2
+    ;;
 esac
 RC=$?
 
@@ -304,6 +309,8 @@ if [[ "$KEEP_DB" != "1" && -f "$DB" ]]; then
 fi
 
 if [[ "$FAIL" -gt 0 ]]; then exit 1; fi
-if [[ "$SKIP" -gt 0 && "$PASS" -eq 0 ]]; then exit 3; fi
+# A request whose own tier was skipped did not run, even if lower tiers passed.
+# Report that explicitly instead of returning success.
+if [[ "$SKIP" -gt 0 ]]; then exit 3; fi
 if [[ "$RC" == "3" ]]; then exit 3; fi
 exit 0
