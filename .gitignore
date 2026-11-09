@@ -1,18 +1,55 @@
+# --- Python ---
 .venv/
+venv/
 __pycache__/
 *.py[cod]
 .pytest_cache/
 *.egg-info/
 .ruff_cache/
+build/
+dist/
+
+# --- Secrets: never commit credentials, tokens or cookies ---
 .env
 .env.*
 !.env.example
-# Do not publish actual media or private transcripts from public creator works
+auth.json
+cookies*.txt
+*cookie*.json
+
+# --- Captured media and derived artifacts ---
+# Raw audio, video, transcripts and the SQLite database are local-only. Public
+# content can still be protected, and a loopback capture can pick up unrelated
+# audio, so none of it belongs in the repository.
 data/**
 !data/**/
 !data/**/.gitkeep
+*.wav
+*.raw.wav
+*.partial.wav
+*.mp3
+*.m4a
+*.aac
+*.flac
+*.opus
+*.ogg
+*.mp4
+*.mkv
+*.webm
+*.aiff
+*.caf
+
+# --- Runtime state ---
 *.sqlite3
 *.sqlite3-wal
 *.sqlite3-shm
+*.sqlite
+*.db
 *.log
-*.partial.wav
+*.ffmpeg.log
+*.ffmpeg.pid
+logs/
+
+# --- Local browser profile for automation (never commit; holds session data) ---
+.cai/
+chrome-profile/
