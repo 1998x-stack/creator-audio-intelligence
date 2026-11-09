@@ -93,11 +93,20 @@ def _doctor(db: DB, llm_check: bool) -> int:
         problems.append('sqlite integrity_check failed')
     print(f'sqlite foreign_keys: {db.conn.execute("PRAGMA foreign_keys").fetchone()[0]}'
           f' journal_mode: {db.conn.execute("PRAGMA journal_mode").fetchone()[0]}')
-    print('audio input devices (loopback source required for capture):')
+    print('audio input devices:')
     devices = ffmpeg_audio_devices()
+    loopback = [d for d in devices if any(k in d.lower() for k in
+                                         ('blackhole', 'monitor', 'loopback', 'null', 'cai_sink'))]
     if devices:
         for dev in devices:
             print(f'  - {dev}')
+        if loopback:
+            print(f'  loopback candidates: {loopback}')
+        else:
+            print('  WARNING: only microphone-class inputs found. A microphone cannot')
+            print('           capture system audio; a virtual loopback device is required.')
+            print('           Run scripts/inspect_audio.sh for the exact remediation.')
+            problems.append('no loopback capture device (microphones only)')
     else:
         print('  (none detected; run scripts/inspect_audio.sh)')
         problems.append('no audio input device detected')
