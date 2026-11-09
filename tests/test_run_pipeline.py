@@ -9,16 +9,17 @@ VIDEO2='7371745609449098522'
 
 class FakeBrowser:
     def __init__(self):self.active=None
-    def discover(self,profile,scroll_rounds):
+    def discover(self,profile,scroll_rounds,platform='douyin'):
         return [VideoCandidate(VIDEO1,'https://www.douyin.com/video/'+VIDEO1),
                 VideoCandidate(VIDEO2,'https://www.douyin.com/video/'+VIDEO2)]
     def open(self,url):
         self.active=url
         return {'url':url,'title':'test'}
-    def inspect_player(self):return {'found':True,'duration':3.0,'url':self.active,'paused':True}
-    def prepare_player(self):return {'ok':True,'time':0}
+    def inspect_player(self):return {'found':True,'duration':3.0,'url':self.active,'paused':True,'pinned':True}
+    def prepare_player(self):return {'ok':True,'time':0,'inViewport':True}
+    def wait_for_metadata(self,timeout=25):return {'ok':True,'duration':3.0,'readyState':4}
     def play(self):return {'paused':False,'ok':True}
-    def wait_for_end(self,url,maximum_seconds):return {'ended':True}
+    def wait_for_end(self,url,maximum_seconds,**kwargs):return {'ended':True}
 
 class FakeRecorder:
     created=[]
@@ -54,7 +55,7 @@ def test_no_visible_links_report_error(monkeypatch,tmp_path):
     import pytest
     import creator_audio_intel.pipeline as p
     class EmptyBrowser(FakeBrowser):
-        def discover(self,profile,scroll_rounds):return []
+        def discover(self,profile,scroll_rounds,platform='douyin'):return []
     monkeypatch.setattr(p,'BrowserHarness',lambda:EmptyBrowser())
     db=DB(tmp_path/'d.db')
     with pytest.raises(RuntimeError,match='No visible video'):

@@ -11,8 +11,11 @@ requires-python = ">=3.11"
 dependencies = []
 
 [project.optional-dependencies]
-asr = ["faster-whisper>=1.1,<2"]
-dev = ["pytest>=8,<10"]
+# av>=19 removed the `metadata_errors` kwarg that faster-whisper 1.2.x still
+# passes to av.open(), so transcription died with
+# "TypeError: open() got an unexpected keyword argument 'metadata_errors'".
+asr = ["faster-whisper>=1.1,<2", "av>=14,<19"]
+dev = ["pytest>=8,<10", "zhconv>=1.4"]
 
 [project.scripts]
 cai = "creator_audio_intel.cli:main"

@@ -15,19 +15,19 @@ from .security import validate_profile_url, video_id_from_url
 
 
 def import_wav(db: DB, *, profile_url: str, video_url: str, wav_path: Path,
-               data_dir: Path, rights_confirmed: bool) -> int:
+               data_dir: Path, rights_confirmed: bool, platform: str = 'douyin') -> int:
     if not rights_confirmed:
         raise ValueError('Confirm rights before importing audio')
-    validate_profile_url(profile_url)
-    video_id = video_id_from_url(video_url)
+    validate_profile_url(profile_url, platform)
+    video_id = video_id_from_url(video_url, platform)
     path = Path(wav_path)
     if not path.is_file():
         raise ValueError('Input WAV does not exist')
     quality = wav_quality(path)
     if not quality.qc_ok:
         raise ValueError('Input WAV failed QC: ' + quality.qc_reason)
-    creator_id = db.creator(profile_url)
-    vid = db.put_video(creator_id, VideoCandidate(video_id, video_url))
+    creator_id = db.creator(profile_url, platform)
+    vid = db.put_video(creator_id, VideoCandidate(video_id, video_url), platform)
     existing = db.latest_capture(vid)
     if existing and existing['wav_sha256'] == quality.sha256:
         return vid

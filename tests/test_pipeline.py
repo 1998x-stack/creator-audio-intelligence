@@ -16,7 +16,7 @@ def test_offline_transcript_to_extraction(monkeypatch,tmp_path):
         lambda *a,**k:([Segment(0,0,2000,'消费可能走弱。')],'zh','test-v1'))
     tid=process_transcript(db,vid)
     assert tid>0
-    monkeypatch.setattr('creator_audio_intel.pipeline.extract_ollama',
+    monkeypatch.setattr('creator_audio_intel.pipeline.extract_claims',
         lambda segments,**kwargs:{'summary':'消费展望','claims':[
             {'kind':'forecast','statement':'消费可能走弱','segment_ids':[0],
              'evidence_quote':'消费可能走弱','forecast':{'metric':'消费','direction':'decrease','horizon':'','conditions':''}}]})
