@@ -36,7 +36,12 @@ Creator URL
   -> BrowserHarness.play -> currentTime/ended checks -> FFmpegLoopback.stop
   -> wav_quality (length/RMS check) -> SQLite captures + job_events
   -> faster-whisper small -> SQLite transcripts/segments
-  -> local Ollama JSON output -> evidence quote check -> SQLite llm_runs/claims
+  -> OpenAI-compatible chat-completions (`iagent/standard`) with a strict JSON schema
+  -> evidence check (contiguous real segment ids + verbatim quote) -> SQLite llm_runs/claims
+
+A capture that fails QC is stored with its reason and never advances the video, and an
+empty transcript raises rather than being stored, so a "successful" row always has
+verifiable backing.
 ```
 
 ## SQLite tables
@@ -56,6 +61,11 @@ Use `PRAGMA foreign_keys=ON`, `journal_mode=WAL`, a single local writer and boun
 
 `discovered -> recording -> captured -> transcribed -> analyzed`
 
+Video identity is `(platform, platform_video_id)`. Two platforms exist: `douyin`
+(production, HTTPS + `douyin.com` only) and `fixture` (the local verification site,
+loopback HTTP allowed). A fixture result therefore cannot be mistaken for, or collide
+with, a Douyin result; `db.stats_by_platform()` reports the split.
+
 `recording -> failed` on errors; after process crash, startup reclassifies stale `recording` as failed. Bounded retry: max 3 attempts. Missing video link, unconfirmed account, no HTML5 player, login/CAPTCHA, stall, failed FFmpeg, silence or audio duration mismatch must be logged as failure rather than success. Real process supervision / orphan reaping are not yet implemented, so use one CLI session only. Restart may require operator to stop an orphan FFmpeg process.
 
 Unique video identity: `(platform,platform_video_id)`, **not title**. Source links and publication date are distinct from capture timestamp. For later cross-platform adaptation, deduplicate using audio fingerprint and source provenance, never by title alone.
@@ -66,7 +76,8 @@ The system loopback source must contain *only* the target video audio. Start FFm
 
 ## Agent boundaries
 
-Pi can call the CLI through its Bash tool; optional pi-browser-harness provides browser tools but is a distinct third-party extension. Do not drive the same Chrome tab concurrently with two controllers. In an operational deployment, prefer Pi for discovery/error recovery and deterministic Python for recording/ASR/SQLite. Do not allow LLM to directly write SQL or transition state. No background job scheduler is implemented.
+Pi can call the CLI through its Bash tool; optional pi-browser-harness provides browser tools but is a distinct third-party extension. Do not drive the same Chrome tab concurrently with two controllers: browser-harness
+holds exactly one attached tab per daemon, so parallel invocations interleave. In an operational deployment, prefer Pi for discovery/error recovery and deterministic Python for recording/ASR/SQLite. Do not allow LLM to directly write SQL or transition state. No background job scheduler is implemented.
 
 ## Extraction contract
 

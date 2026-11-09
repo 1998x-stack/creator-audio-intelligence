@@ -15,6 +15,29 @@ Status legend: DONE CODE / TESTED OFFLINE / REQUIRES LOCAL VALIDATION / FUTURE.
 
 Do not expand features before Gate B from PRD is passed. A robust audio-only capture is more valuable than dozens of unreliable modules.
 
+## Hardening pass (branch `deploy/linux-e2e-hardening`)
+
+- [x] Browser adapter hardened against real Chrome: navigation confirmation, metadata
+      polling, player pinning, gesture gating, background-tab scroll recovery.
+- [x] Discovery failure taxonomy (`EMPTY_PROFILE` / `DISCOVERY_FAILED` /
+      `LOGIN_REQUIRED` / `ACCESS_DENIED` / `DOM_CHANGED` / `TIMEOUT`).
+- [x] LLM provider swapped from local Ollama to the OpenAI-compatible
+      `iagent/standard` endpoint, with bounded retries and actionable rejection
+      feedback.
+- [x] Capture QC extended to peak/silence/clipping; orphan FFmpeg reaping; SIGTERM-safe
+      shutdown; bounded ASR input normalisation for quiet captures.
+- [x] `platform` made part of identity, with a `fixture` platform for real local
+      verification.
+- [x] Operational scripts: `bootstrap_linux`, `doctor`, `smoke_test`, `e2e_test`,
+      `inspect_audio`, `verify_sqlite`, `launch_chrome_cdp`, `make_fixture`,
+      `serve_fixture`, `asr_benchmark`.
+- [x] `docs/gotchas.md`, `docs/TEST_REPORT.md`, `docs/LINUX_ENVIRONMENT.md`,
+      `docs/LINUX_AUDIO_SETUP.md`, `docs/ASR_BENCHMARK.md`, `docs/LINUX_DEPLOYMENT.md`.
+- [ ] Validate a loopback capture route (BLOCKED: macOS needs BlackHole; Linux path
+      documented but unexercised).
+- [ ] Douyin discovery verification (BLOCKED: site unreachable from this network).
+- [ ] Three-video serial pilot and systemd unit execution (BLOCKED by the two above).
+
 ## Implementation additions in v0.2
 - [x] Offline authorized WAV import and source-linked SQLite ingestion.
 - [x] Stage-specific resume after ASR/LLM failure, without re-recording.

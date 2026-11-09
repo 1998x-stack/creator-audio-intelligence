@@ -4,7 +4,7 @@ Use this as a prompt to a local agent with terminal and a dedicated Chrome profi
 
 ```text
 You are developing the independent Creator Audio Intelligence project.
-Read README.md, docs/PRD.md, docs/ARCHITECTURE.md, docs/ROADMAP.md and docs/GOTCHAS.md.
+Read README.md, docs/PRD.md, docs/ARCHITECTURE.md, docs/ROADMAP.md and docs/gotchas.md.
 
 Goal: input a user-confirmed Douyin creator homepage URL, discover public works,
 process ONE authorized video at a time, record audio through a dedicated
@@ -27,7 +27,7 @@ Requirements:
    discovery and bounded checkpoints. Current browser selectors are experimental.
 8. Keep raw media/transcripts/cookies outside public Git; respect access rights,
    platform limits and stop at login/CAPTCHA/DRM or uncertain authorization.
-9. Record each real issue and precise reproduction/repair in docs/GOTCHAS.md.
+9. Record each real issue and precise reproduction/repair in docs/gotchas.md.
 10. Report implemented/tested/unverified scope accurately, with exact commands.
 
 Do not start bulk ingest until the single-video and three-video acceptance gates pass.
