@@ -93,23 +93,42 @@ def test_single_writer_lock(tmp_path):
         pass
 
 
-def test_asr_nonempty_segments_have_contiguous_ids(monkeypatch):
+def _quiet_wav(path, peak=800):
+    import wave
+    from array import array
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with wave.open(str(path), 'wb') as f:
+        f.setnchannels(1); f.setsampwidth(2); f.setframerate(16000)
+        f.writeframes(array('h', (peak if i % 40 < 20 else -peak for i in range(16000 * 2))).tobytes())
+
+
+def test_asr_nonempty_segments_have_contiguous_ids(monkeypatch, tmp_path):
     import sys
     from types import ModuleType, SimpleNamespace
     import creator_audio_intel.asr as asr
+    wav = tmp_path / 'fake.wav'
+    _quiet_wav(wav)
+    seen = {}
     fake = ModuleType('faster_whisper')
     fake.__version__ = 'fake1'
     class FakeWhisper:
         def __init__(self, *args, **kwargs): pass
-        def transcribe(self, path, **kwargs):
+        def transcribe(self, audio, **kwargs):
+            seen['audio'] = audio
             segments = [SimpleNamespace(start=0,end=1,text='经济'),
                         SimpleNamespace(start=1,end=2,text='   '),
                         SimpleNamespace(start=2,end=3,text='增长')]
             return iter(segments), SimpleNamespace(language='zh')
     fake.WhisperModel = FakeWhisper
     monkeypatch.setitem(sys.modules, 'faster_whisper', fake)
-    segments, lang, version = asr.transcribe_audio('fake.wav')
+    segments, lang, version = asr.transcribe_audio(wav)
     assert [s.segment_id for s in segments] == [0, 1]
     assert [s.text for s in segments] == ['经济','增长']
     assert lang == 'zh'
-    assert version == 'fake1'
+    # provenance records the in-memory preprocessing rule that produced the input
+    assert version.startswith('fake1+peaknorm-v1')
+    # a quiet capture is amplified (bounded) and the gain is part of provenance
+    assert '+gain20.0dB' in version
+    # the decoder receives normalised float samples, not the raw path
+    assert getattr(seen['audio'], 'dtype', None) is not None
+    assert abs(float(max(abs(seen['audio'])))) > 0.2
