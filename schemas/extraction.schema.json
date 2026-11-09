@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/creator-audio-intelligence/extraction-v1",
+  "title": "Evidence-based extraction v1",
+  "type": "object",
+  "properties": {
+    "summary": {"type": "string"},
+    "claims": {"type": "array", "items": {
+      "type": "object",
+      "properties": {
+        "kind": {"enum": ["fact", "causal", "opinion", "recommendation", "forecast"]},
+        "statement": {"type": "string"},
+        "segment_ids": {"type": "array", "minItems": 1, "items": {"type": "integer"}},
+        "evidence_quote": {"type": "string"},
+        "forecast": {"type": "object", "properties": {
+          "metric": {"type": "string"},
+          "direction": {"type": "string"},
+          "horizon": {"type": "string"},
+          "conditions": {"type": "string"}
+        }, "required": ["metric", "direction", "horizon", "conditions"], "additionalProperties": false}
+      },
+      "required": ["kind", "statement", "segment_ids", "evidence_quote", "forecast"],
+      "additionalProperties": false
+    }}
+  },
+  "required": ["summary", "claims"],
+  "additionalProperties": false
+}
